@@ -77,3 +77,7 @@ Base URL: http://localhost/api/
 ## Tech Stack
 * PHP 8.4
 * MySQL 8.0
+
+## Support
+
+If you encounter any issues or need more details, please feel free to reach out to me. Thank you!
