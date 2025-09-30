@@ -11,5 +11,5 @@ Route::get('/user', function (Request $request) {
 
 Route::post('orders', [OrderController::class, 'store']);
 Route::get('orders/active', [OrderController::class, 'activeOrders']);
-Route::post('orders/{order}/complete', [OrderController::class, 'completeOrder']);
+Route::post('orders/{orderId}/complete', [OrderController::class, 'completeOrder']);
 Route::get('orders/priority', [OrderController::class, 'priorityQueue']);

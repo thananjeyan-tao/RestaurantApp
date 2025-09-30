@@ -1,61 +1,79 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# RestaurantApp
+A Backend Service for Managing Restaurant Orders with Kitchen Capacity throttling, Complete Order, Active orders List, VIP Priority etc.. Built with PHP + Laravel and uses MySQL for persistence.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Features
+* Create orders with capacity throttling (max N active orders).
+* VIP orders bypass kitchen limits.
+* View all active orders.
+* Complete orders to free capacity.
+* Orders are persisted in DB (MySQL).
+* VIP priority queue
+* Suggests next available ordering time when full.
+* Auto-complete after X seconds
+* Unit and Feature Tests
+* Capacity and completion time configurable via `config/kitchen.php`
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Setup Local Development
+Recommend to use docker. Don't worry with the help of [Laravel Sail](https://laravel.com/docs/master/sail), very little knowledge of docker is required.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+First you need to install docker in your local machine. [instruction](https://docs.docker.com/get-docker/)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+After successfully install docker the rest will be easy. <br>
+*Note: The instruction will be base on Ubuntu but won't be so much different from other OS*
 
-## Learning Laravel
+### Install the app
+Clone the repo, navigate into the folder, and open it in terminal:
+```
+git clone https://github.com/thananjeyan-tao/RestaurantApp.git
+cd RestaurantApp
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+copy `.env.example` to `.env` and update accordingly
+```
+cp .env.example .env
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Install  Dependencies
+```
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php84-composer:latest \
+    composer install --ignore-platform-reqs
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+create container (this will take times)
+```
+sail up -d
+```
+migrate database
+```
+sail artisan migrate
+```
 
-## Laravel Sponsors
+run backround job for auto complete order
+```
+sail artisan queue:work
+```
+running tests
+```
+sail artisan test
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### API Endpoints
+Base URL: http://localhost/api/
 
-### Premium Partners
+* Create Order POST /orders
+* List Active Orders GET /orders/active
+* Complete Order POST /orders/{id}/complete
+* Priority Queue (VIP first) GET /orders/priority
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+#### Default Port
+* App: 80
+* Database: 3306
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Tech Stack
+* PHP 8.4
+* MySQL 8.0

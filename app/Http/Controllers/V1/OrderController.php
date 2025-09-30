@@ -8,6 +8,7 @@ use App\Http\Resources\OrderCollection;
 use App\Http\Resources\OrderResource;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -18,20 +19,33 @@ class OrderController extends Controller
     public function store(CreateOrderRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $order = $this->orderService->createOrder($data);
 
-        if (!$order) {
-            $nextAvailableTime = $this->orderService->getNextAvailableOrderTime();
+        try {
+            $order = $this->orderService->createOrder($data);
+            if (!$order) {
+                $nextAvailableTime = $this->orderService->getNextAvailableOrderTime();
+                return response()->json([
+                    'message' => 'Too Many Orders',
+                    'next_available_time' => $nextAvailableTime->toDateTimeString(),
+                ], 429);
+            }
+
             return response()->json([
-                'message' => 'Too Many Orders',
-                'next_available_time' => $nextAvailableTime->toDateTimeString(),
-            ], 429);
-        }
+                'message' => 'Order created!',
+                'data'    => new OrderResource($order)
+            ], 201);
+        } catch (\Throwable $e) {
+            Log::error('Order creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $data
+            ]);
 
-        return response()->json([
-            'message' => 'Order created!',
-            'data'    => new OrderResource($order)
-        ], 201);
+            return response()->json([
+                'message' => 'Something went wrong while creating the order.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function activeOrders(): OrderCollection
